@@ -194,6 +194,31 @@
     };
 
     document.body.appendChild(script);
+
+    function requestFullscreen() {
+      const element = document.documentElement;
+
+      if (document.fullscreenElement) {
+        return;
+      }
+
+      if (element.requestFullscreen) {
+        element.requestFullscreen();
+      } else if (element.webkitRequestFullscreen) {
+        element.webkitRequestFullscreen();
+      } else if (element.msRequestFullscreen) {
+        element.msRequestFullscreen();
+      }
+    }
+
+    function enableFullscreenOnFirstInteraction() {
+      requestFullscreen();
+      window.removeEventListener("touchstart", enableFullscreenOnFirstInteraction);
+      window.removeEventListener("click", enableFullscreenOnFirstInteraction);
+    }
+
+    window.addEventListener("touchstart", enableFullscreenOnFirstInteraction, { once: true });
+    window.addEventListener("click", enableFullscreenOnFirstInteraction, { once: true });
   </script>
 </body>
 
