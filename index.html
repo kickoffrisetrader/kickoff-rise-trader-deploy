@@ -2,16 +2,12 @@
 <html lang="en-us">
 
 <head>
-  <meta charset="utf-8" />
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Unity Web Player | Kickoff Rise Trader</title>
-
-  <link rel="shortcut icon" href="TemplateData/favicon.ico" />
-  <link rel="stylesheet" href="TemplateData/style.css" />
-  <link rel="manifest" href="manifest.webmanifest" />
-
-  <meta name="viewport"
-    content="width=device-width, height=device-height, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <link rel="shortcut icon" href="TemplateData/favicon.ico">
+  <link rel="stylesheet" href="TemplateData/style.css">
+  <link rel="manifest" href="manifest.webmanifest">
 
   <style>
     html,
@@ -27,10 +23,8 @@
     #unity-container {
       position: fixed;
       inset: 0;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      background: #000;
+      width: 100%;
+      height: 100%;
     }
 
     #unity-canvas {
@@ -40,24 +34,41 @@
       background: #000;
     }
 
-    #unity-loading-bar,
-    #unity-warning {
-      position: absolute;
-      z-index: 10;
+    /* Popup xoay màn hình */
+    #rotate-popup {
+      position: fixed;
+      inset: 0;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 9999;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 24px;
+      box-sizing: border-box;
     }
 
-    @media screen and (orientation: portrait) {
-      #unity-container {
-        width: 100vh;
-        height: 100vw;
-        transform: rotate(90deg);
-        transform-origin: center center;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        margin-left: -50vh;
-        margin-top: -50vw;
-      }
+    #rotate-popup-content {
+      max-width: 320px;
+    }
+
+    #rotate-popup-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+
+    #rotate-popup-title {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    #rotate-popup-text {
+      font-size: 18px;
+      line-height: 1.5;
+      opacity: 0.9;
     }
   </style>
 </head>
@@ -76,6 +87,17 @@
     <div id="unity-warning"></div>
   </div>
 
+  <!-- Popup xoay màn hình -->
+  <div id="rotate-popup">
+    <div id="rotate-popup-content">
+      <div id="rotate-popup-icon">📱↻</div>
+      <div id="rotate-popup-title">Rotate Device</div>
+      <div id="rotate-popup-text">
+        Please rotate your device to landscape mode to play the game.
+      </div>
+    </div>
+  </div>
+
   <script>
     window.addEventListener("load", function () {
       if ("serviceWorker" in navigator) {
@@ -88,6 +110,7 @@
     const loadingBar = document.querySelector("#unity-loading-bar");
     const progressBarFull = document.querySelector("#unity-progress-bar-full");
     const warningBanner = document.querySelector("#unity-warning");
+    const rotatePopup = document.querySelector("#rotate-popup");
 
     function unityShowBanner(msg, type) {
       function updateBannerVisibility() {
@@ -107,9 +130,7 @@
         }
 
         setTimeout(() => {
-          if (warningBanner.contains(div)) {
-            warningBanner.removeChild(div);
-          }
+          warningBanner.removeChild(div);
           updateBannerVisibility();
         }, 5000);
       }
@@ -130,9 +151,29 @@
       productName: "Kickoff Rise Trader",
       productVersion: "1.0.0",
       showBanner: unityShowBanner,
-      devicePixelRatio: 1,
-      matchWebGLToCanvasSize: true,
     };
+
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      const meta = document.createElement("meta");
+      meta.name = "viewport";
+      meta.content =
+        "width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes";
+      document.head.appendChild(meta);
+    }
+
+    function updateOrientationPopup() {
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const isPortrait = window.innerHeight > window.innerWidth;
+
+      if (isMobile && isPortrait) {
+        rotatePopup.style.display = "flex";
+      } else {
+        rotatePopup.style.display = "none";
+      }
+    }
+
+    window.addEventListener("resize", updateOrientationPopup);
+    window.addEventListener("orientationchange", updateOrientationPopup);
 
     loadingBar.style.display = "block";
 
@@ -141,10 +182,11 @@
 
     script.onload = () => {
       createUnityInstance(canvas, config, (progress) => {
-        progressBarFull.style.width = progress * 100 + "%";
+        progressBarFull.style.width = (100 * progress) + "%";
       })
-        .then(() => {
+        .then((unityInstance) => {
           loadingBar.style.display = "none";
+          updateOrientationPopup();
         })
         .catch((message) => {
           alert(message);
