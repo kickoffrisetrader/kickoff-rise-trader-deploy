@@ -130,9 +130,13 @@
   <button id="fullscreen-btn" type="button">⛶</button>
 
   <script>
+    const BUILD_VERSION = "2.0.0";
+
     window.addEventListener("load", function () {
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("ServiceWorker.js");
+        navigator.serviceWorker.register("ServiceWorker.js?v=" + BUILD_VERSION, {
+          updateViaCache: "none"
+        });
       }
     });
 
@@ -170,17 +174,17 @@
     }
 
     const buildUrl = "Build";
-    const loaderUrl = buildUrl + "/Build.loader.js";
+    const loaderUrl = buildUrl + "/Build.loader.js?v=" + BUILD_VERSION;
 
     const config = {
       arguments: [],
-      dataUrl: buildUrl + "/Build.data",
-      frameworkUrl: buildUrl + "/Build.framework.js",
-      codeUrl: buildUrl + "/Build.wasm",
+      dataUrl: buildUrl + "/Build.data?v=" + BUILD_VERSION,
+      frameworkUrl: buildUrl + "/Build.framework.js?v=" + BUILD_VERSION,
+      codeUrl: buildUrl + "/Build.wasm?v=" + BUILD_VERSION,
       streamingAssetsUrl: "StreamingAssets",
       companyName: "DefaultCompany",
       productName: "Kickoff Rise Trader",
-      productVersion: "1.0.0",
+      productVersion: BUILD_VERSION,
       showBanner: unityShowBanner,
     };
 
